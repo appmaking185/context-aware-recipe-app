@@ -8,7 +8,7 @@ class RecipeShimmerList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: 6,
-      itemBuilder: (_, __) {
+      itemBuilder: (_, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey.shade300,
           highlightColor: Colors.grey.shade100,

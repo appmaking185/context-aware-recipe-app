@@ -35,6 +35,88 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+
+  auto_route: ^11.1.0
+  intl: ^0.20.1
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+
+  # Service locator (Dependency Injection)
+  get_it: ^9.2.0
+  # Dio is http client library for API's
+  dio: ^5.7.0
+  # Flutter blocs is state management library
+  flutter_bloc: ^9.0.0
+  # Functional programming thingies
+  dartz: ^0.10.1
+  # Manage session library
+  shared_preferences: ^2.3.5
+  # a widget provided to the flutter scroll component drop-down refresh and pull up load
+  pull_to_refresh: ^2.0.0
+
+  # Launch any type of url in the package and render all type of files
+  url_launcher: ^6.3.1
+  nb_utils: ^7.0.9
+  # To log all the Log level (debug,verbose,info,error,wtf[what the terrible failure log])
+  logger: ^2.5.0
+  # A Pure Dart Utility library that checks for an Active Internet connection
+  internet_connection_checker: ^3.0.1
+  connectivity_plus: ^6.1.2
+  # A Flutter plugin to check and ask permission for specific native feature.
+  permission_handler: ^12.0.1
+  # Display toast messages
+  fluttertoast: ^8.2.10
+  #Image Picker
+  image_picker: ^1.1.2
+  # image resizer
+  image_cropper: ^12.2.1
+  # For firebase notification
+  flutter_local_notifications: ^21.0.0
+  # select country
+  country_picker_pro: ^0.0.5
+  #country wise mobile number validator 
+  country_phone_validator: ^1.0.1
+  # OTP Text Field
+  pinput: ^6.0.1
+  #device info
+  device_info_plus: ^12.2.0
+  #For read more / Less Text
+  readmore: ^3.0.0
+  # To check Value Equality between objects same Type or data we use Equatable
+  equatable: ^2.0.5
+  #To Show Toast Message
+  top_snackbar_flutter: ^3.2.0
+  auto_size_text: ^3.0.0
+  # To display dotted border or Divider
+  dotted_decoration: ^2.0.0
+  flutter_keyboard_visibility: ^6.0.0
+  #Payment Gateway 
+  flutter_stripe: ^12.1.1
+  # Deep linking for OAuth redirects
+  app_links: ^7.0.0
+  another_flushbar: ^1.12.30
+  syncfusion_flutter_calendar: ^33.2.4
+  flutter_timezone: ^5.0.1
+  flutter_rating_bar: ^4.0.1
+  upgrader: ^13.1.0
+  share_plus: ^12.0.1
+  path_provider: ^2.1.5
+  flutter_easyloading: ^3.0.5
+  flutter_web_auth_2: ^5.0.2
+  flutter_secure_storage: ^10.0.0
+  sign_in_with_apple: ^7.0.1
+  # google_sign_in: ^7.2.0
+  google_sign_in: ^7.2.0
+  # For getting the timezone of the device
+  # flutter_native_timezone: ^2.0.0
+  # flutter_timezone: ^5.0.1
+  hive_ce_flutter: ^2.3.4
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  timezone: ^0.11.0
+  bloc: ^9.2.0
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +127,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  auto_route_generator: 10.4.0
+  build_runner: 2.7.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -58,6 +142,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
+  assets:
+    - packages/timezone/data/latest_all.tzf
+    - assets/images/
+    - assets/icons/
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
@@ -73,6 +161,25 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+  fonts:
+    - family: Agrandir-TextBold
+      fonts:
+        - asset: assets/fonts/Agrandir-TextBold.otf
+    - family: Agrandir-Regular
+      fonts:
+        - asset: assets/fonts/Agrandir-Regular.otf
+    - family: Agrandir-Narrow
+      fonts:
+        - asset: assets/fonts/Agrandir-Narrow.otf   
+    - family: OpenSans-Bold
+      fonts:
+        - asset: assets/fonts/OpenSans-Bold.ttf   
+    - family: OpenSans-Medium
+      fonts:
+        - asset: assets/fonts/OpenSans-Medium.ttf   
+    - family: OpenSans-Regular
+      fonts:
+        - asset: assets/fonts/OpenSans-Regular.ttf 
   # fonts:
   #   - family: Schyler
   #     fonts:

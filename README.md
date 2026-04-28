@@ -14,3 +14,14 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## CI/CD
+
+GitHub Actions workflow is available at `.github/workflows/main.yml`.
+
+- On pull request to `main`: runs `flutter analyze` and `flutter test`.
+- On push to `main`: runs analyze + test, builds release APK, and publishes a GitHub Release.
+
+Generated APK path in CI:
+
+- `build/app/outputs/flutter-apk/app-release.apk`

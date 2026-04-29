@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:ivtexsolutionsapp/presentation/bloc/recipeBloc/recipe_bloc.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class ContextBanner extends StatelessWidget {
   final RecipeLoaded state;
+  final VoidCallback? onOpenSettings;
 
   const ContextBanner({
     super.key,
     required this.state,
+    this.onOpenSettings,
   });
 
   @override
@@ -32,9 +33,9 @@ class ContextBanner extends StatelessWidget {
               style: const TextStyle(fontSize: 12),
             ),
           ),
-          if (state.notificationPermissionDenied)
+          if (state.locationPermissionDenied || state.notificationPermissionDenied)
             TextButton(
-              onPressed: openAppSettings,
+              onPressed: onOpenSettings,
               child: const Text('Open Settings'),
             ),
         ],

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ivtexsolutionsapp/data/services/app_permissions_service.dart';
 import 'package:ivtexsolutionsapp/utils/local_notification.dart';
 import 'package:ivtexsolutionsapp/utils/time_zone_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -34,8 +35,8 @@ class MealNotificationService {
     String? lunchSuggestion,
     String? dinnerSuggestion,
   }) async {
-    final status = await Permission.notification.request();
-    if (!status.isGranted) {
+    final granted = await AppPermissionsService.requestNotificationPermission();
+    if (!granted) {
       return const MealNotificationResult(permissionDenied: true);
     }
 
@@ -148,8 +149,8 @@ class MealNotificationService {
   // QUICK TEST (10s / 20s / 30s)
   // =========================
   Future<MealNotificationResult> scheduleQuickMealTestNotifications() async {
-    final status = await Permission.notification.request();
-    if (!status.isGranted) {
+    final granted = await AppPermissionsService.requestNotificationPermission();
+    if (!granted) {
       return const MealNotificationResult(permissionDenied: true);
     }
 

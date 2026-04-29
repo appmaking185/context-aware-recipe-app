@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:ivtexsolutionsapp/data/services/app_permissions_service.dart';
 
 class LocationContextResult {
   final String? country;
@@ -16,8 +16,8 @@ class LocationContextResult {
 
 class LocationContextService {
   Future<LocationContextResult> getCountryContext() async {
-    final permissionStatus = await Permission.locationWhenInUse.request();
-    final permissionDenied = !permissionStatus.isGranted;
+    final permissionDenied =
+        !(await AppPermissionsService.requestLocationPermission());
 
     if (permissionDenied) {
       return LocationContextResult(

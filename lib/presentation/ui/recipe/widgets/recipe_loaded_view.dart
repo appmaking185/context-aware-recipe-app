@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/context_banner.dart';
 import 'package:ivtexsolutionsapp/data/model/recipe_model.dart';
 import 'package:ivtexsolutionsapp/presentation/bloc/recipeBloc/recipe_bloc.dart';
 import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/recipe_list_item.dart';
@@ -18,25 +17,18 @@ class RecipeLoadedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ContextBanner(state: state),
-        Expanded(
-          child: ListView.builder(
-            itemCount: state.list.length,
-            itemBuilder: (context, index) {
-              final recipe = state.list[index];
-              final isFav = state.favoriteIds.contains(recipe.id);
-              return RecipeListItem(
-                recipe: recipe,
-                isFav: isFav,
-                onOpen: () => onOpenRecipe(recipe, isFav),
-                onToggleFavorite: () => onToggleFavorite(recipe),
-              );
-            },
-          ),
-        ),
-      ],
+    return ListView.builder(
+      itemCount: state.list.length,
+      itemBuilder: (context, index) {
+        final recipe = state.list[index];
+        final isFav = state.favoriteIds.contains(recipe.id);
+        return RecipeListItem(
+          recipe: recipe,
+          isFav: isFav,
+          onOpen: () => onOpenRecipe(recipe, isFav),
+          onToggleFavorite: () => onToggleFavorite(recipe),
+        );
+      },
     );
   }
 }

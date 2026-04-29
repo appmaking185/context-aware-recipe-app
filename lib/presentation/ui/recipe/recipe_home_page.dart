@@ -3,9 +3,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ivtexsolutionsapp/data/services/app_permissions_service.dart';
 import 'package:ivtexsolutionsapp/data/services/meal_notification_service.dart';
 import 'package:ivtexsolutionsapp/presentation/bloc/recipeBloc/recipe_bloc.dart';
 import 'package:ivtexsolutionsapp/presentation/ui/recipe/recipe_detail_page.dart';
+import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/context_banner.dart';
 import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/empty_state.dart';
 import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/recipe_loaded_view.dart';
 import 'package:ivtexsolutionsapp/presentation/ui/recipe/widgets/recipe_mode_toggle.dart';
@@ -23,15 +25,18 @@ class RecipeHomePage extends StatefulWidget {
 class _RecipeHomePageState extends State<RecipeHomePage> {
   final TextEditingController _searchController = TextEditingController();
   bool _showingFavorites = false;
+  bool _openedSettingsFromBanner = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
     context.read<RecipeBloc>().add(LoadInitialEvent());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
     _searchController.dispose();
     super.dispose();
   }
@@ -98,25 +103,37 @@ class _RecipeHomePageState extends State<RecipeHomePage> {
                             'No favorites yet. Tap heart on recipes to save them.',
                       );
                     }
-                    return RecipeLoadedView(
-                      state: state,
-                      onOpenRecipe: (recipe, isFav) {
-                        context.read<RecipeBloc>().add(
-                          OpenRecipeDetailEvent(recipe),
-                        );
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                RecipeDetailPage(recipe: recipe, isFav: isFav),
+                    return Column(
+                      children: [
+                        ContextBanner(
+                          state: state,
+                          onOpenSettings: _openSettingsWithRefresh,
+                        ),
+                        Expanded(
+                          child: RecipeLoadedView(
+                            state: state,
+                            onOpenRecipe: (recipe, isFav) {
+                              context.read<RecipeBloc>().add(
+                                OpenRecipeDetailEvent(recipe),
+                              );
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => RecipeDetailPage(
+                                    recipe: recipe,
+                                    isFav: isFav,
+                                  ),
+                                ),
+                              );
+                            },
+                            onToggleFavorite: (recipe) {
+                              context.read<RecipeBloc>().add(
+                                ToggleFavoriteEvent(recipe),
+                              );
+                            },
                           ),
-                        );
-                      },
-                      onToggleFavorite: (recipe) {
-                        context.read<RecipeBloc>().add(
-                          ToggleFavoriteEvent(recipe),
-                        );
-                      },
+                        ),
+                      ],
                     );
                   }
                   return const SizedBox.shrink();
@@ -129,5 +146,30 @@ class _RecipeHomePageState extends State<RecipeHomePage> {
     );
   }
 
+  Future<void> _openSettingsWithRefresh() async {
+    _openedSettingsFromBanner = await AppPermissionsService.openSettings();
+  }
+
+  late final WidgetsBindingObserver _lifecycleObserver = _RecipeLifecycleObserver(
+    onResume: () {
+      if (!_openedSettingsFromBanner || !mounted) return;
+      _openedSettingsFromBanner = false;
+      context.read<RecipeBloc>().add(LoadInitialEvent());
+    },
+  );
+
   // UI widgets are separated under `lib/presentation/ui/recipe/widgets/`.
+}
+
+class _RecipeLifecycleObserver extends WidgetsBindingObserver {
+  final VoidCallback onResume;
+
+  _RecipeLifecycleObserver({required this.onResume});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      onResume();
+    }
+  }
 }

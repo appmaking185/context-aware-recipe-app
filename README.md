@@ -1,148 +1,135 @@
 # Context-Aware Recipe Discovery (Flutter)
 
-This project implements the Flutter assignment: **Context-Aware Recipe Discovery** using **Bloc**, offline-first behavior, Location/Time context, and **meal-time scheduled notifications**.
+Production-style Flutter app built for the IVTEX assignment.  
+The app suggests recipes using **time + location context**, supports **offline-first fallback**, and includes **scheduled meal notifications** with CI/CD release automation.
 
-## What to show in interview (2–3 minute demo script)
+## Quick Interview Demo (2-3 minutes)
 
-- **Context-aware home**
-  - Launch app → it automatically loads recipes using **Time context** (Breakfast/Lunch/Dinner).
-  - Location permission prompt may appear; if denied, app still works.
-- **Search**
-  - Type `chicken` / `fish` → see debounced search (no API spam).
-  - Check console logs: `[RecipeAPI]` + `[RecipeBloc]`.
-- **Offline-first**
-  - Favorite 2–3 recipes.
-  - Turn off internet → app still shows cached/favorite data.
-- **Notifications**
-  - Explain: app schedules **daily** notifications at **8:00 AM / 2:00 PM / 8:00 PM**.
-  - If notification permission is denied, banner shows **Open Settings**.
+1. Launch app and show context-based loading (Breakfast/Lunch/Dinner by current time).
+2. Deny location permission once and show graceful fallback (app still usable).
+3. Search `chicken` or `pasta` and explain debounced API calls.
+4. Favorite 2 recipes, disable internet, relaunch app, show cached/favorite data.
+5. Show notification section and explain daily schedule (8:00 AM, 2:00 PM, 8:00 PM).
+6. Tap the alarm icon in AppBar to trigger a quick test notification flow.
 
-## Assignment Mapping (PDF A/B/C)
+## Assignment Requirement Mapping
 
 ### A) Smart Discovery & Search
-- Uses public API: **TheMealDB** (`search.php?s=`).
+- Public API integration: **TheMealDB**.
 - Time-based suggestions:
   - Morning -> Breakfast
-  - Afternoon -> Lunch
+  - Midday -> Lunch
   - Evening -> Dinner
-- Location-based prioritization:
-  - Country is detected (with permission handling).
-  - Matching cuisine/area is moved higher in results.
-- Debounced search:
-  - 500ms debounce in `RecipeBloc` to reduce API spam.
+- Location-aware prioritization:
+  - Detects user country (if permission granted).
+  - Prioritizes matching cuisine/area.
+- Search optimization:
+  - Debounced query handling in Bloc to avoid API spamming.
 
 ### B) Offline-First Experience
-- Favorites saved locally in Hive (`favorites` box).
-- Recipe list/search cache saved in Hive (`cache` box).
-- Viewed recipe entries also cached.
-- On network failure:
-  - app shows cached/favorite data instead of blank screen.
-- Images are loaded with `CachedNetworkImage` for better cache usage.
+- Local persistence with Hive:
+  - `favorites` box for saved recipes.
+  - `cache` box for fetched/viewed recipe data.
+- Cached image support with `CachedNetworkImage`.
+- Network failure fallback:
+  - Shows cached/favorited content instead of empty UI.
 
 ### C) Proactive Engagement
-- Daily local notifications scheduled at:
-  - 8:00 AM (Breakfast)
-  - 2:00 PM (Lunch)
-  - 8:00 PM (Dinner)
-- Notification bodies can include meal suggestions from fetched/cached recipes.
-- Permission denied states (location/notifications) are handled and surfaced in UI banner.
+- Local notifications scheduled daily:
+  - 8:00 AM -> Breakfast suggestion
+  - 2:00 PM -> Lunch suggestion
+  - 8:00 PM -> Dinner suggestion
+- Permission handling:
+  - Location/notification denial is handled gracefully with UI guidance.
+- Manual tester utility:
+  - AppBar alarm icon can trigger quick test notifications for easy interviewer verification.
 
-## How to use (for reviewer)
+## Tech Stack and Architecture
 
-- **Search**
-  - Use the top search box.
-  - Examples: `chicken`, `pasta`, `cake`.
-- **Favorites**
-  - Tap the heart icon on any recipe to save offline.
-  - Switch to the **Favorites** tab to view saved recipes.
-- **Recipe details**
-  - Tap any recipe → opens details with Hero transition.
-- **Permissions**
-  - If Location/Notification permission is denied, app continues with fallback behavior.
-  - If notifications are denied, use **Open Settings** button in the banner.
+- State management: `flutter_bloc`
+- Dependency injection: `get_it`
+- Data pattern: Repository + services
+- Local DB/cache: `hive`, `hive_flutter`
+- Notifications: `flutter_local_notifications`, `timezone`
+- Location: `geolocator`, `geocoding`
 
-## Architecture
+## Important Project Files
 
-- **State Management:** Bloc
-- **DI:** GetIt (`lib/injection_container.dart`)
-- **Data Layer:** Repository pattern
-- **Storage:** Hive (`favorites`, `cache`)
-- **Notifications:** `flutter_local_notifications` + `timezone`
-- **Location:** `geolocator` + `geocoding`
-
-## Key files (quick navigation)
-
-- **UI**
-  - `lib/presentation/ui/recipe/recipe_home_page.dart` (Home, Search, Favorites, Banner)
-  - `lib/presentation/ui/recipe/recipe_detail_page.dart` (Detail, Hero)
-- **Bloc**
+- UI
+  - `lib/presentation/ui/recipe/recipe_home_page.dart`
+  - `lib/presentation/ui/recipe/recipe_detail_page.dart`
+- Bloc
   - `lib/presentation/bloc/recipeBloc/recipe_bloc.dart`
   - `lib/presentation/bloc/recipeBloc/recipe_event.dart`
   - `lib/presentation/bloc/recipeBloc/recipe_state.dart`
-- **Data**
-  - `lib/data/respositoryImpl/repository_recipe_impl.dart` (TheMealDB API call + logs)
-  - `lib/data/services/cache_service.dart` (cache)
-  - `lib/data/services/fav_service.dart` (favorites)
-  - `lib/data/services/location_context_service.dart` (country context)
-  - `lib/data/services/meal_notification_service.dart` (scheduling)
-- **Notification init**
-  - `lib/utils/local_notification.dart` (plugin init, channel, icon)
-  - `android/app/src/main/AndroidManifest.xml` (receivers/permissions)
+- Data + services
+  - `lib/data/respositoryImpl/repository_recipe_impl.dart`
+  - `lib/data/services/cache_service.dart`
+  - `lib/data/services/fav_service.dart`
+  - `lib/data/services/location_context_service.dart`
+  - `lib/data/services/meal_notification_service.dart`
+- Notification bootstrap
+  - `lib/utils/local_notification.dart`
+  - `android/app/src/main/AndroidManifest.xml`
 
-## Main Flow
+## Run Locally
 
-1. App opens `RecipeHomePage` as initial route.
-2. `LoadInitialEvent` runs:
-   - finds meal type by current time
-   - fetches location context
-   - calls recipe API
-   - falls back to cache/favorites on failure
-   - schedules daily meal notifications
-3. User can:
-   - search recipes (debounced)
-   - favorite/unfavorite
-   - switch between `All` and `Favorites`
-   - manage notification permission (if denied, UI provides **Open Settings** button)
+```bash
+flutter pub get
+flutter run
+```
 
-## Console Logs (for interview/demo)
+## Test Scenarios for Reviewer
 
-Clear debug logs are added with tags:
-- `[RecipeAPI]` -> API request/response/failure logs
-- `[RecipeBloc]` -> search flow, fallback path, favorites, scheduling logs
+### 1) Search + Debounce
+- Type quickly in search bar (`chicken`, `fish`, `cake`).
+- Observe smooth updates and no unnecessary repeated calls.
 
-Open debug console while running app to demonstrate behavior.
+### 2) Offline fallback
+1. Open app once with internet.
+2. Favorite 2-3 recipes.
+3. Disable network.
+4. Reopen app and verify cached/favorites still visible.
 
-## Run Instructions
+### 3) Permission resilience
+- Deny location -> app continues with generic results.
+- Deny notifications -> UI still works; user can open app settings.
+- If location or notification permission is denied, banner shows `Open Settings`.
+- `Open Settings` opens app settings for both location and notification controls.
+- After enabling permission and returning to app, screen refreshes automatically.
 
-1. Install dependencies:
-   - `flutter pub get`
-2. Run app:
-   - `flutter run`
-3. First screen will be recipe module.
+### 4) Quick notification test (Alarm icon)
+1. Open app home screen.
+2. Tap the alarm icon in top-right AppBar.
+3. App shows snackbar confirming test schedule.
+4. Wait around 30 seconds for test notification.
+5. If not received, ensure notification permission is enabled and retry.
 
-## Offline test steps
+## CI/CD Pipeline (GitHub Actions)
 
-1. Open app once (loads initial recipes)
-2. Favorite 2–3 recipes
-3. Turn off internet (Airplane mode)
-4. Relaunch app → it should show cached/favorite data instead of blank UI
+Workflow file: `.github/workflows/main.yml`
 
-## Notification behavior notes
+On push/PR to `main` or `master`, pipeline runs:
+1. `flutter analyze`
+2. `flutter test`
+3. `flutter build apk --release`
+4. Upload APK as workflow artifact
+5. On push to `main/master`, publish APK to GitHub Releases
 
-- Notifications are **scheduled locally** (no server required).
-- After first app launch, the daily schedule continues even if app is closed.
-- On some OEM devices, battery optimization may delay scheduled notifications. For best results:
-  - set the app to **Unrestricted / Don’t optimize** battery mode
-  - ensure the notification channel is **High importance**
+### How to trigger CI/CD
 
-## Feature Verification Checklist
+```bash
+git add .
+git commit -m "Trigger CI"
+git push origin main
+```
 
-- Search with terms like `chicken`, `fish`, `cake`.
-- Toggle favorite heart and open `Favorites` tab.
-- Turn off internet and verify cached/favorite fallback.
-- Keep app installed and verify scheduled notifications at meal times.
+After successful run:
+- Check **Actions** tab for green pipeline.
+- Check **Releases** section for generated release APK.
 
 ## Notes
 
-- Local notifications generally work in foreground/background/terminated, but behavior may vary by device battery policies.
-- CI/CD workflow for GitHub Releases can be added in `.github/workflows/main.yml` if required by final submission.
+- Notifications are local (no backend required).
+- On some devices, battery optimization may delay notifications; allow unrestricted battery mode for accurate timing.
+- The AppBar alarm icon is a testing shortcut to validate notification setup quickly during demo/interview.

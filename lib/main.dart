@@ -27,7 +27,7 @@ Future<void> main() async {
   await sl<MealNotificationService>().ensureDailyMealNotificationsScheduled();
   runApp(const MyApp());
 }
-
+//
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 

@@ -18,7 +18,13 @@ final ecommerceSl = GetIt.asNewInstance();
 
 Future<void> initEcommerce() async {
   final prefs = await SharedPreferences.getInstance();
-  final dio = Dio();
+  final dio = Dio(
+    BaseOptions(
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 30),
+    ),
+  );
   final storage = EcommerceStorageService();
   await storage.init();
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:ivtexsolutionsapp/ecommerce/core/api_error_mapper.dart';
 import 'package:ivtexsolutionsapp/ecommerce/core/ecommerce_constants.dart';
 import 'package:ivtexsolutionsapp/ecommerce/data/models/product_model.dart';
 import 'package:ivtexsolutionsapp/ecommerce/data/services/ecommerce_storage_service.dart';
@@ -8,6 +9,8 @@ import 'package:ivtexsolutionsapp/ecommerce/data/services/product_api_service.da
 import 'package:ivtexsolutionsapp/ecommerce/domain/repositories/product_repository.dart';
 
 enum ProductListStatus { initial, loading, loaded, error, offline }
+
+enum ProductDetailStatus { initial, loading, loaded, error }
 
 class ProductProvider extends ChangeNotifier {
   ProductProvider({
@@ -36,8 +39,13 @@ class ProductProvider extends ChangeNotifier {
 
   Timer? _debounce;
   ProductModel? selectedProduct;
+  ProductDetailStatus detailStatus = ProductDetailStatus.initial;
+  String? detailErrorMessage;
+  int? _loadingDetailId;
 
   List<ProductModel> get products => List.unmodifiable(_products);
+
+  bool get isShowingCachedData => status == ProductListStatus.offline;
 
   Future<void> init() async {
     await Future.wait([loadCategories(), refreshProducts()]);
@@ -56,6 +64,7 @@ class ProductProvider extends ChangeNotifier {
     _skip = 0;
     hasMore = true;
     _products.clear();
+    errorMessage = null;
     status = ProductListStatus.loading;
     notifyListeners();
     await _fetchPage(reset: true);
@@ -89,13 +98,24 @@ class ProductProvider extends ChangeNotifier {
   }
 
   Future<void> loadProductDetails(int id) async {
+    _loadingDetailId = id;
+    detailStatus = ProductDetailStatus.loading;
+    detailErrorMessage = null;
+    selectedProduct = null;
+    notifyListeners();
+
     try {
       selectedProduct = await _repository.getProductById(id);
-      notifyListeners();
+      if (_loadingDetailId != id) return;
+      detailStatus = ProductDetailStatus.loaded;
+      detailErrorMessage = null;
     } catch (e) {
-      errorMessage = e.toString();
-      notifyListeners();
+      if (_loadingDetailId != id) return;
+      detailStatus = ProductDetailStatus.error;
+      detailErrorMessage = ApiErrorMapper.message(e);
+      selectedProduct = null;
     }
+    notifyListeners();
   }
 
   Future<void> _fetchPage({bool reset = false}) async {
@@ -120,20 +140,23 @@ class ProductProvider extends ChangeNotifier {
       _skip += EcommerceConstants.pageSize;
       hasMore = _products.length < _total;
       status = ProductListStatus.loaded;
+      errorMessage = null;
       await _storage.cacheProducts(_products);
     } catch (e) {
+      final friendly = ApiErrorMapper.message(e);
       if (_products.isEmpty) {
         final cached = _storage.loadCachedProducts();
         if (cached.isNotEmpty) {
           _products.addAll(cached);
           status = ProductListStatus.offline;
+          errorMessage = null;
           hasMore = false;
         } else {
           status = ProductListStatus.error;
-          errorMessage = e.toString();
+          errorMessage = friendly;
         }
       } else {
-        errorMessage = e.toString();
+        errorMessage = friendly;
       }
     } finally {
       _isFetching = false;

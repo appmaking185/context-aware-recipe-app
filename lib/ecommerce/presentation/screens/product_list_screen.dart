@@ -7,7 +7,9 @@ import 'package:ivtexsolutionsapp/ecommerce/presentation/providers/connectivity_
 import 'package:ivtexsolutionsapp/ecommerce/presentation/providers/product_provider.dart';
 import 'package:ivtexsolutionsapp/ecommerce/presentation/screens/cart_screen.dart';
 import 'package:ivtexsolutionsapp/ecommerce/presentation/screens/product_detail_screen.dart';
+import 'package:ivtexsolutionsapp/ecommerce/presentation/widgets/error_retry_view.dart';
 import 'package:ivtexsolutionsapp/ecommerce/presentation/widgets/offline_banner.dart';
+import 'package:ivtexsolutionsapp/ecommerce/presentation/widgets/offline_cached_banner.dart';
 import 'package:ivtexsolutionsapp/ecommerce/presentation/widgets/product_card.dart';
 import 'package:ivtexsolutionsapp/resources/app_colors.dart';
 import 'package:shimmer/shimmer.dart';
@@ -87,6 +89,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         child: Column(
           children: [
             const OfflineBanner(),
+            if (products.isShowingCachedData) const OfflineCachedBanner(),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: TextField(
@@ -127,73 +130,110 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
     if (products.status == ProductListStatus.error &&
         products.products.isEmpty) {
-      return _ErrorView(
+      return ErrorRetryView(
         message: products.errorMessage ?? 'Something went wrong',
-        onRetry: () {
-          context.read<ConnectivityProvider>().refresh();
-          products.refreshProducts();
-        },
+        onRetry: () => _retryProducts(context, products),
       );
     }
 
     if (products.products.isEmpty) {
-      return const Center(child: Text('No products found'));
+      return ErrorRetryView(
+        message: 'No products found. Try another search or category.',
+        icon: Icons.inventory_2_outlined,
+        onRetry: () => _retryProducts(context, products),
+      );
     }
 
     return RefreshIndicator(
       onRefresh: products.refreshProducts,
-      child: GridView.builder(
+      child: CustomScrollView(
         controller: _scrollController,
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          // childAspectRatio: 0.62,
-          mainAxisExtent: 325,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: products.products.length + 1,
-        itemBuilder: (context, index) {
-          if (index == products.products.length) {
-            if (!products.hasMore) {
-              return const SizedBox.expand(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('End of list'),
-                  ),
-                ),
-              );
-            }
-            if (products.isLoadingMore) {
-              return const SizedBox.expand(
-                child: Center(
-                  child: SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          }
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(12),
+            sliver: SliverGrid(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final product = products.products[index];
 
-          final product = products.products[index];
-          return ProductCard(
-            product: product,
-            cartQuantity: cart.quantityForProduct(product.id),
-            onTap: () => _openDetails(product),
-            onAdd: () => cart.addProduct(product),
-          );
-        },
+                return ProductCard(
+                  product: product,
+                  cartQuantity: cart.quantityForProduct(product.id),
+                  onTap: () => _openDetails(product),
+                  onAdd: () => cart.addProduct(product),
+                );
+              }, childCount: products.products.length),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisExtent: 325,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+            ),
+          ),
+
+          /// Footer Full Width
+          SliverToBoxAdapter(child: _buildListFooter(context, products)),
+        ],
       ),
     );
+    
   }
 
+  void _retryProducts(BuildContext context, ProductProvider products) {
+    context.read<ConnectivityProvider>().refresh();
+    products.refreshProducts();
+  }
+
+  Widget _buildListFooter(BuildContext context, ProductProvider products) {
+    if (products.isLoadingMore) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(
+          child: SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(strokeWidth: 2.5),
+          ),
+        ),
+      );
+    }
+
+    if (products.errorMessage != null && products.products.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Center(
+          child: Column(
+            children: [
+              Text(
+                products.errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.alertcolor,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: products.loadMore,
+                child: const Text('Retry load more'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (!products.hasMore) {
+      return const Padding(
+        padding: EdgeInsets.all(20),
+        child: Center(child: Text('End of list')),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+ 
   void _openDetails(ProductModel product) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -212,7 +252,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         mainAxisSpacing: 10,
       ),
       itemCount: 6,
-      itemBuilder: (_, __) => Shimmer.fromColors(
+      itemBuilder: (_, _) => Shimmer.fromColors(
         baseColor: AppColors.greyBackground,
         highlightColor: Colors.white,
         child: Card(child: Container(color: Colors.white)),
@@ -290,36 +330,6 @@ class _CategoryChip extends StatelessWidget {
         label: Text(label),
         selected: selected,
         onSelected: (_) => onTap(),
-      ),
-    );
-  }
-}
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 48,
-              color: AppColors.alertcolor,
-            ),
-            const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: onRetry, child: const Text('Retry')),
-          ],
-        ),
       ),
     );
   }

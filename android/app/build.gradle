@@ -2,10 +2,12 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services"
 }
 
 android {
-    namespace "com.example.ivtexsolutionsapp"
+    // namespace "com.example.ivtexsolutionsapp"
+    namespace "com.flutter_push_notification"
     compileSdk flutter.compileSdkVersion
     ndkVersion "28.2.13676358"
 
@@ -21,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.example.ivtexsolutionsapp"
+        applicationId "com.flutter_push_notification"
         minSdk flutter.minSdkVersion
         targetSdk flutter.targetSdkVersion
         versionCode flutter.versionCode

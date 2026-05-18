@@ -1,3 +1,21 @@
+# IVTEX Flutter Projects
+
+## E-Commerce Interview Task (Provider)
+
+PDF-based technical assessment implemented with **Provider** state management.
+
+```bash
+flutter pub get
+# Configure Firebase (google-services.json + GoogleService-Info.plist + flutterfire configure)
+flutter run -t lib/main_ecommerce.dart
+```
+
+See [INTERVIEW_TASK.md](INTERVIEW_TASK.md) for full requirements, evaluation criteria, and architecture.
+
+**API:** [dummyjson.com/products](https://dummyjson.com/products) — supports `total`, `skip`, `limit`, `availabilityStatus`, category slugs, and search.
+
+---
+
 # Context-Aware Recipe Discovery (Flutter)
 
 Production-style Flutter app built for the IVTEX assignment.  

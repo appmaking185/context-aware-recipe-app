@@ -1,10 +1,86 @@
-import 'dart:io';
+import 'dart:ui';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:ivtexsolutionsapp/injection_container.dart' as di;
+import 'package:ivtexsolutionsapp/presentation/bloc/recipeBloc/recipe_bloc.dart';
+import 'package:ivtexsolutionsapp/routes/app_router.dart';
+import 'package:ivtexsolutionsapp/themes/app_theme.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    await di.init();
+  } catch (e) {
+    debugPrint('Dependency injection initialization error: $e');
+  }
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('Flutter error: ${details.exception}');
+    debugPrint('Stack trace: ${details.stack}');
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Platform error: $error');
+    debugPrint('Stack trace: $stack');
+    return true;
+  };
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      designSize: const Size(375, 812),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider<RecipeBloc>(create: (_) => di.sl<RecipeBloc>()),
+          ],
+          child: MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.noScaling),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                final currentFocus = FocusScope.of(context);
+                if (!currentFocus.hasPrimaryFocus &&
+                    currentFocus.focusedChild != null) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                }
+              },
+              child: MaterialApp.router(
+                title: 'Mr. Neeraj',
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                routerDelegate: di.sl<AppRouter>().delegate(),
+                routeInformationParser: di.sl<AppRouter>().defaultRouteParser(),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/*
+import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
-import 'package:ivtexsolutionsapp/ecommerce/ecommerce_app.dart';
 import 'package:ivtexsolutionsapp/firebase_options.dart';
 
 Future<void> main() async {
@@ -20,7 +96,6 @@ Future<void> main() async {
       debugPrint('Firebase.initializeApp failed: $e\n$st');
     }
   }
-  await runEcommerceApp();
 }
 
 class MyHttpOverrides extends HttpOverrides {
@@ -31,7 +106,7 @@ class MyHttpOverrides extends HttpOverrides {
           (X509Certificate cert, String host, int port) => true;
   }
 }
-
+*/
 // import 'dart:async';
 // import 'dart:io';
 // import 'package:flutter/material.dart';

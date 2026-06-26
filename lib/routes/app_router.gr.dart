@@ -11,17 +11,17 @@
 part of 'app_router.dart';
 
 /// generated route for
-/// [RecipeHomePage]
-class RecipeHomeRoute extends PageRouteInfo<void> {
-  const RecipeHomeRoute({List<PageRouteInfo>? children})
-    : super(RecipeHomeRoute.name, initialChildren: children);
+/// [DatingHomeScreen]
+class DatingHomeRoute extends PageRouteInfo<void> {
+  const DatingHomeRoute({List<PageRouteInfo>? children})
+    : super(DatingHomeRoute.name, initialChildren: children);
 
-  static const String name = 'RecipeHomeRoute';
+  static const String name = 'DatingHomeRoute';
 
   static PageInfo page = PageInfo(
     name,
     builder: (data) {
-      return const RecipeHomePage();
+      return const DatingHomeScreen();
     },
   );
 }

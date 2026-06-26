@@ -1,9 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-
 import '../../core/failure.dart';
 
-// ignore: constant_identifier_names
 enum ApiType { GET, POST, PUT, DELETE, PATCH, MULTIPART }
 
 abstract class BaseAPIService {

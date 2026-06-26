@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:ivtexsolutionsapp/presentation/ui/recipe/recipe_home_page.dart';
+import 'package:ivtexsolutionsapp/features/dating/presentation/screens/dating_home_screen.dart';
+
 part 'app_router.gr.dart';
 
 @AutoRouterConfig()
@@ -9,10 +10,8 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     AutoRoute(
-      page: RecipeHomeRoute.page,
+      page: DatingHomeRoute.page,
       initial: true,
-      // transitionsBuilder: customTransitionBuilder,
-      // durationInMilliseconds: animationDuration,
     ),
   ];
 }
